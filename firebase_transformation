@@ -1,0 +1,44 @@
+select * from (
+      SELECT PARSE_DATE('%Y%m%d', event_date) event_date, 
+             TIMESTAMP_MICROS(event_timestamp) event_timestamp,
+             TIMESTAMP_MICROS(event_previous_timestamp) event_previous_timestamp,
+             NULLIF(user_pseudo_id,"") user_pseudo_id, 
+             NULLIF(user_id,"") user_id,
+             CAST((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "userLevel") as int64) userLevel,
+             NULLIF(event_name, "") event_name,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "missionID"), "") missionID,
+             CAST((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "requiredMergeCount") as int64) requiredMergeCount,
+             CAST((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "notRequiredMergeCount") as int64) notrequiredMergeCount,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "mergeItemID"), "") mergeItemID,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "mergeItemTier"), "") mergeItemTier,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "product_name"), "") product_name,
+             (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "price") price,
+             CAST((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "iapLocalizedPrice") as FLOAT64) iapLocalizedPrice,
+             SAFE_CAST((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "iapLocalPrice") as FLOAT64) iapLocalPrice,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "productId"), "") productId,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "firebase_screen_class"), "") firebase_screen_class,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "firebase_event_origin"), "") firebase_event_origin,
+             NULLIF((SELECT value.string_value FROM UNNEST(event_params) WHERE key = "clientVersion"), "") clientVersion,
+             NULLIF(app_info.version, "") app_info_version,
+             (SELECT TIMESTAMP_MICROS(value.int_value) FROM UNNEST(user_properties) WHERE key = "first_open_time") first_open_time,
+             TIMESTAMP_MICROS(user_first_touch_timestamp) user_first_touch_timestamp,
+             NULLIF(device.category, "") category,
+             NULLIF(device.mobile_brand_name, "") mobile_brand_name,
+             NULLIF(device.mobile_model_name, "") mobile_model_name,
+             NULLIF(device.mobile_marketing_name, "") mobile_marketing_name,	
+             NULLIF(device.mobile_os_hardware_model, "") mobile_os_hardware_model,
+             NULLIF(upper(device.operating_system), "") operating_system,
+             NULLIF(device.operating_system_version, "") operating_system_version,
+             NULLIF(geo.country, "") country,
+             NULLIF(geo.continent, "") continent,
+             NULLIF(geo.region, "") region,
+             NULLIF(geo.city, "") city,
+             NULLIF(geo.sub_continent, "") sub_continent,
+             NULLIF(traffic_source.name, "") source_name,
+             NULLIF(traffic_source.medium, "") source_medium
+             
+ FROM `idle-village-425d1.analytics_251837388.events_*`
+  ) t
+ 
+ -- exluding os_update, in separate view 
+ where event_name != 'os_update' 
